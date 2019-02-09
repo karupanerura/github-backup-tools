@@ -52,11 +52,11 @@ MAIN: {
         }
     }
 
-    my $issue_dir = $outdir->child('issues');
-    $issue_dir->mkpath;
     for my $repo (@$repos) {
         my ($owner, $repo) = split m!\/!, $repo;
 
+        my $issue_dir = $outdir->child($owner)->child($repo)->child('issues');
+        $issue_dir->mkpath;
         {
             my $issues_result = $pithub->issues->list(user => $owner, repo => $repo, params => {
                 filter => 'all',
