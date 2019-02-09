@@ -65,8 +65,8 @@ MAIN: {
             while (my $row = $issues_result->next) {
                 my $issue_id = $row->{number};
 
-                $outdir->child("$issue_id.json")->spew_raw($_JSON->encode($row));
-                $outdir->child($issue_id)->mkpath;
+                $issue_dir->child("$issue_id.json")->spew_raw($_JSON->encode($row));
+                $issue_dir->child($issue_id)->mkpath;
             }
 
             my $comments_result = $pithub->request(
@@ -76,7 +76,7 @@ MAIN: {
             while (my $row = $comments_result->next) {
                 my ($issue_id) = $row->{issue_url} =~ m!/([0-9]+)$!;
                 my $comment_id = $row->{id};
-                $outdir->child($issue_id)->child("issuecomment-${comment_id}.json")->spew_raw($_JSON->encode($row));
+                $issue_dir->child($issue_id)->child("issuecomment-${comment_id}.json")->spew_raw($_JSON->encode($row));
             }
         }
 
