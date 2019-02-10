@@ -15,7 +15,7 @@ Backup these resources:
 
 Backup these resources:
 
-* issue related assets (from *.githubusercontent.com, github.com/files/*)
+* issue related assets (from `*.githubusercontent.com`, `github.com/files/*`)
 
 ## backup-github-repos.pl
 
