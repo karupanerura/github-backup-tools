@@ -67,8 +67,8 @@ MAIN: {
             }
         };
 
-        my $issue_dir = $outdir->child($owner)->child($repo)->child('issues');
-        $issue_dir->mkpath;
+        my $issues_dir = $outdir->child($owner)->child($repo)->child('issues');
+        $issues_dir->mkpath;
         {
             my $issues_result = $pithub->issues->list(user => $owner, repo => $repo, params => {
                 filter => 'all',
@@ -77,8 +77,8 @@ MAIN: {
             while (my $row = $issues_result->next) {
                 my $issue_id = $row->{number};
 
-                $issue_dir->child("$issue_id.json")->spew_raw($_JSON->encode($row));
-                $issue_dir->child($issue_id)->mkpath;
+                $issues_dir->child("$issue_id.json")->spew_raw($_JSON->encode($row));
+                $issues_dir->child($issue_id)->mkpath;
             }
 
             my $comments_result = $pithub->request(
@@ -88,7 +88,7 @@ MAIN: {
             while (my $row = $comments_result->next) {
                 my ($issue_id) = $row->{issue_url} =~ m!/([0-9]+)$!;
                 my $comment_id = $row->{id};
-                $issue_dir->child($issue_id)->child("issuecomment-${comment_id}.json")->spew_raw($_JSON->encode($row));
+                $issues_dir->child($issue_id)->child("issuecomment-${comment_id}.json")->spew_raw($_JSON->encode($row));
             }
         }
 
