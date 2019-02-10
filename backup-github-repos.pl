@@ -76,23 +76,25 @@ MAIN: {
         $outdir->child($owner)->mkpath;
 
         my $repodir = $outdir->child($owner)->child($repo)->child('tree');
-        if ($repodir->exists) {
-            Git::Repository->new(work_tree => $repodir)->run('pull');
-        } else {
+        unless ($repodir->exists) {
             $repodir->parent->mkpath unless $repodir->parent->exists;
             Git::Repository->run(clone => "$url.git", $repodir);
         }
+        Git::Repository->new(work_tree => $repodir)->run(qw!fetch origin +refs/pull/*:refs/remotes/pull/*!);
 
         if ($with_wiki) {
             my $repo_info = $repo_info{"$owner/$repo"} ||= $pithub->repos->get(user => $owner, repo => $repo)->next;
             if ($repo_info->{has_wiki}) {
                 my $repodir = $outdir->child($owner)->child($repo)->child('wiki')->child('tree');
+
+                my $has_wiki;
                 if ($repodir->exists) {
-                    Git::Repository->new(work_tree => $repodir)->run('pull');
+                    $has_wiki = 1;
                 } else {
                     $repodir->parent->mkpath unless $repodir->parent->exists;
                     eval {
                         Git::Repository->run(clone => "$url.wiki.git", $repodir);
+                        $has_wiki = 1;
                     };
                     if (my $e = $@) {
                         if ($e =~ /access denied or repository not exported/) {
@@ -101,6 +103,10 @@ MAIN: {
                             die $e;
                         }
                     }
+                }
+
+                if ($has_wiki) {
+                    Git::Repository->new(work_tree => $repodir)->run(qw!fetch origin +refs/pull/*:refs/remotes/pull/*!);
                 }
             }
         }
