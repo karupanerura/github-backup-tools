@@ -7,6 +7,7 @@ use Smart::Options::Declare;
 use Path::Tiny qw/path/;
 use JSON::PP;
 use URI;
+use URI::Escape qw/uri_escape_utf8/;
 
 use DDP;
 use Devel::KYTProf;
@@ -54,6 +55,17 @@ MAIN: {
 
     for my $repo (@$repos) {
         my ($owner, $repo) = split m!\/!, $repo;
+
+        {
+            my $labels_dir = $outdir->child($owner)->child($repo)->child('labels');
+            $labels_dir->mkpath;
+
+            my $labels_result = $pithub->issues->labels->list(user => $owner, repo => $repo);
+            while (my $row = $labels_result->next) {
+                my $name = uri_escape_utf8($row->{name});
+                $labels_dir->child("$name.json")->spew_raw($_JSON->encode($row));
+            }
+        };
 
         my $issue_dir = $outdir->child($owner)->child($repo)->child('issues');
         $issue_dir->mkpath;
